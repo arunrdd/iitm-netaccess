@@ -1,6 +1,6 @@
 {
     "name": "IITM netaccess",
-    "version": "1.2",
+    "version": "2",
     "manifest_version": 2,
     "description": "Makes it easy for you to verify netaccess. One click!",
     "icons": {
@@ -8,9 +8,9 @@
     },
     "background": {
         "scripts": [
+            "jquery.js",
             "main.js"
-        ],
-        "persistent": false
+        ]
     },
     "options_page": "options.html",
     "browser_action": {

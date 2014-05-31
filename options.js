@@ -14,8 +14,8 @@ window.addEventListener('load', function() {
   options.Password.onkeyup = function() {
     localStorage.Password = options.Password.value;
   };
-  options.activation.onkeyup = function() {
+  options.activation.onchange = function() {
     localStorage.activation = options.activation.value;
-    // console.log(localStorage.activation);
+    console.log(localStorage.activation.value);
   };
 });

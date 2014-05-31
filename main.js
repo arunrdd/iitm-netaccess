@@ -1,63 +1,138 @@
-chrome.browserAction.onClicked.addListener(function(tab) {
+(function($){
+  var o = $({});
 
-	// post('http://netaccess.iitm.ac.in',{
-	// 	"userLogin":localStorage.RollNumber,
-	// 	"userPassword":localStorage.Password},"post");
+  $.each({
+    trigger: 'publish',
+    on: 'subscribe',
+    off: 'unsubscribe'
+  }, function(key, val){
+    jQuery[val] = function(){
+      o[key].apply(o,arguments);
+    };
+  });
+
+})(jQuery);
+
+
+(function($){
+  var netAccess = {
+    init: function(){
+	  this.subscriptions();    
+      this.username = '';
+      this.password = '';
+      this.usageHtml = '';
+      this.duration = 1;
+      this.notified = false;
+        
+      return this;
+    },
+    
+    subscriptions: function(){
+      $.subscribe('netaccess/setLogin',this.setLoginDetails);
+      $.subscribe('netaccess/updateUsage',this.updateUsage);
+      $.subscribe('netaccess/approve',this.approve);
+    },
+
+    start: function(){
+    	var self = netAccess;
+    	netAccess.login();
+    },
+
+    login: function(){
+    	var self = netAccess;
+    	if(netAccess.setDetails()){
+	    	chrome.browserAction.setBadgeText({text: "login"});
+	    	var data = {'userLogin':self.username,'userPassword':self.password},
+	    		url = "https://netaccess.iitm.ac.in/account/login";
+	    	$.ajax({
+			  type: "POST",
+			  url: url,
+			  data: data,
+			  success: self.successLogin
+			});
+    	}
+    	else{
+    		chrome.tabs.create({url: "options.html"});
+    	}
+    },
+
+    successLogin: function(html){
+    	var self = netAccess;
+    	$.parseHTML(html);
+    	if($( ".alert",html ).hasClass( "alert-warning" )){
+    		chrome.tabs.create({url: "options.html"},function(){
+    			alert('Invalid login details!');
+    		});
+    	}
+    	else{
+    		self.usageHtml = html;
+    		setTimeout(function(){
+    		$.publish('netaccess/approve');	
+    		},800);
+    	}
+    },
+
+    approve: function(){
+    	var self = netAccess;
+    	chrome.browserAction.setBadgeText({text: "approve"});
+    	duration = self.duration.toString();
+    	var data = {'duration':duration,'approveBtn':''},
+    		url = "https://netaccess.iitm.ac.in/account/approve";
+    	$.ajax({
+		  type: "POST",
+		  url: url,
+		  data: data,
+		  success: self.successApprove
+		});
+    },
+
+    successApprove: function(html){
+    	console.log(html);
+    	setTimeout(function(){
+    		chrome.browserAction.setBadgeText({text: "done"});
+    	},400);
+    	setTimeout(function(){
+    		$.publish('netaccess/updateUsage');
+    	},800);
+    },
+
+    updateUsage: function(){
+    	var self = netAccess;
+    	str = $('.alert-success', self.usageHtml).html();
+    	array = str.split(" ");
+    	usage = parseInt(array[5], 10);
+    	if(usage>300 && self.notified == false){
+    		alert("You have only "+(1000-usage)+"MB left. Use wisely!");
+    		self.notified = true;
+    	};
+  		chrome.browserAction.setBadgeText({text: usage.toString()});
+    },
+
+
+    setDetails: function(){
 	if(localStorage.RollNumber===undefined || localStorage.Password===undefined ){
-		chrome.tabs.create({url: "options.html"});
+		return 0;
 	}
 	else{
-	chrome.tabs.create({ url: "https://netaccess.iitm.ac.in/account/login" },function(){
-		chrome.tabs.query({url:"https://netaccess.iitm.ac.in/account/login"},function(tab){
-					exec = "document.getElementById('username').value='"+localStorage.RollNumber+"';document.getElementById('password').value='"+localStorage.Password+"';document.getElementById('submit').click();";
-					chrome.tabs.executeScript(tab[0].id,
-		        	{code:exec});
-		});
-		    setTimeout(function(){
-	chrome.tabs.create({ url: "https://netaccess.iitm.ac.in/account/approve" },function(){
-				chrome.tabs.query({url:"https://netaccess.iitm.ac.in/account/approve"},function(tab){
+		this.username = localStorage.RollNumber;
+		this.password = localStorage.Password;
+		this.duration = localStorage.activation;
+		console.log(this.duration);
+		return 1;
+	}
+    },
 
-						if(localStorage.activation==1){
-			 			exec = "document.getElementById('radios-0').checked=true;setTimeout(function(){document.getElementById('approveBtn').click();},50);";
-			 			}
-			 			else{
-			 			exec = "document.getElementById('radios-1').checked=true;setTimeout(function(){document.getElementById('approveBtn').click();},50);";
-			 			}
-						chrome.tabs.executeScript(tab[0].id,
-			        	{code:exec});
-			     		setTimeout(function(){
-			     			chrome.tabs.query({url:"https://netaccess.iitm.ac.in/account/index"},function(tabs){
-			     				if (tabs.length == 0){
-			     					chrome.tabs.create({url: "options.html"});
-			     					setTimeout(function(){
-			     						chrome.tabs.query({url:"options.html"},function(tabs){
-			     							alert("Invalid Login Details. Please Check!");
-			     						});
-			     					},100);
-			     					chrome.tabs.query({url:"https://netaccess.iitm.ac.in/account/login"},function(tabs){
-			     						chrome.tabs.remove(tabs[0].id,function(){
+  };
+  window.netAccess = netAccess.init();
+  chrome.browserAction.setBadgeBackgroundColor({color:"#000"});
+})(jQuery);
 
-					    	});
-					    	chrome.tabs.remove(tabs[1].id,function(){
-
-					    	});
-			     					});
-			     					// console.log('Invalid Login Details. Please Check!');
-			     				}
-			     				else{
-					    	chrome.tabs.remove(tabs[0].id,function(){
-
-					    	});
-					    	chrome.tabs.remove(tabs[1].id,function(){
-
-					    	});
-					    }
-							});
-			        	},2000);
-				});
- 			});
-        	},4000);
-
-	});
-}
+// fire the start when user clicks icon
+chrome.browserAction.onClicked.addListener(function(tab){
+	netAccess.start();  	
 });
+
+// fire an update every 15min
+setTimeout(function(){
+	netAccess.start();
+},900000);
