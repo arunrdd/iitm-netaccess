@@ -1,6 +1,6 @@
 {
     "name": "IITM netaccess",
-    "version": "2.1",
+    "version": "2.3",
     "manifest_version": 2,
     "description": "Makes it easy for you to verify netaccess. One click!",
     "icons": {

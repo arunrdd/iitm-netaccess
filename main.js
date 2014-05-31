@@ -88,7 +88,6 @@
     },
 
     successApprove: function(html){
-    	console.log(html);
     	setTimeout(function(){
     		chrome.browserAction.setBadgeText({text: "Done!"});
     	},400);
@@ -106,12 +105,32 @@
     	}
     	else{
     		array = str.split(" ");
-    		usage = parseInt(array[5], 10);
+    		var i,memory,units;
+			for (i = 0; i < array.length; ++i) {
+    			if(isNaN(array[i]) || array[i]==""){
+    				
+    			}
+    			else{
+    				memory = array[i];
+    				if (array[i+1].slice(0,1)=="B"){
+    					units = "B";
+    				}
+    				if (array[i+1].slice(0,1)=="K"){
+    					units = "KB";
+    				}
+    				if (array[i+1].slice(0,1)=="G"){
+    					units = "GB";
+    				}
+    				break;
+    			}
+			}
+
+    		usage = parseInt(memory, 10);
     		if(usage>300 && self.notified == false){
     			alert("You have only "+(1000-usage)+"MB left. Use wisely!");
     			self.notified = true;
     		};
-  			chrome.browserAction.setBadgeText({text: usage.toString()});
+  			chrome.browserAction.setBadgeText({text: usage.toString()+units});
     	}
     },
 
@@ -129,7 +148,6 @@
 		else{
 			this.duration = localStorage.activation;
 		}
-		console.log(this.duration);
 		return 1;
 	}
     },
