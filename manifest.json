@@ -1,0 +1,31 @@
+{
+    "name": "IITM netaccess",
+    "version": "1.2",
+    "manifest_version": 2,
+    "description": "Makes it easy for you to verify netaccess. One click!",
+    "icons": {
+        "16": "iitm.png"
+    },
+    "background": {
+        "scripts": [
+            "main.js"
+        ],
+        "persistent": false
+    },
+    "options_page": "options.html",
+    "browser_action": {
+        "name": "arun",
+        "default_title": "IITM netaccess",
+        "default_icon": "iitm.png"
+    },
+    "permissions": [
+        "tabs",
+        "activeTab",
+        "https://netaccess.iitm.ac.in/*/*"
+    ],
+    "web_accessible_resources": [
+        "iitm.png",
+        "wallpaper.jpg",
+        "bootstrap.min.css"
+    ]
+}
