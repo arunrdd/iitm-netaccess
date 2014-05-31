@@ -36,12 +36,13 @@
     start: function(){
     	var self = netAccess;
     	netAccess.login();
+    	chrome.browserAction.setBadgeBackgroundColor({color:"#000"});
     },
 
     login: function(){
     	var self = netAccess;
     	if(netAccess.setDetails()){
-	    	chrome.browserAction.setBadgeText({text: "login"});
+	    	chrome.browserAction.setBadgeText({text: "Login"});
 	    	var data = {'userLogin':self.username,'userPassword':self.password},
 	    		url = "https://netaccess.iitm.ac.in/account/login";
 	    	$.ajax({
@@ -89,7 +90,7 @@
     successApprove: function(html){
     	console.log(html);
     	setTimeout(function(){
-    		chrome.browserAction.setBadgeText({text: "done"});
+    		chrome.browserAction.setBadgeText({text: "Done!"});
     	},400);
     	setTimeout(function(){
     		$.publish('netaccess/updateUsage');
@@ -99,13 +100,19 @@
     updateUsage: function(){
     	var self = netAccess;
     	str = $('.alert-success', self.usageHtml).html();
-    	array = str.split(" ");
-    	usage = parseInt(array[5], 10);
-    	if(usage>300 && self.notified == false){
-    		alert("You have only "+(1000-usage)+"MB left. Use wisely!");
-    		self.notified = true;
-    	};
-  		chrome.browserAction.setBadgeText({text: usage.toString()});
+    	if (str==undefined){
+    		chrome.browserAction.setBadgeBackgroundColor({color:"#F00"});
+    		chrome.browserAction.setBadgeText({text: ">1GB"});
+    	}
+    	else{
+    		array = str.split(" ");
+    		usage = parseInt(array[5], 10);
+    		if(usage>300 && self.notified == false){
+    			alert("You have only "+(1000-usage)+"MB left. Use wisely!");
+    			self.notified = true;
+    		};
+  			chrome.browserAction.setBadgeText({text: usage.toString()});
+    	}
     },
 
 
@@ -116,7 +123,12 @@
 	else{
 		this.username = localStorage.RollNumber;
 		this.password = localStorage.Password;
-		this.duration = localStorage.activation;
+		if (localStorage.activation==undefined){
+			this.duration = 1;
+		}
+		else{
+			this.duration = localStorage.activation;
+		}
 		console.log(this.duration);
 		return 1;
 	}
