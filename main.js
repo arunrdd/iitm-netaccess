@@ -105,6 +105,7 @@
     	}
     	else{
     		array = str.split(" ");
+    		console.log(array);
     		var i,memory,units;
 			for (i = 0; i < array.length; ++i) {
     			if(isNaN(array[i]) || array[i]==""){
@@ -115,22 +116,25 @@
     				if (array[i+1].slice(0,1)=="B"){
     					units = "B";
     				}
-    				if (array[i+1].slice(0,1)=="K"){
+    				else if (array[i+1].slice(0,1)=="K"){
     					units = "KB";
     				}
-    				if (array[i+1].slice(0,1)=="G"){
-    					units = "GB";
+    				else if (array[i+1].slice(0,1)=="M"){
+    					units = "MB";
+    				}
+    				else{
+    					units = "";
     				}
     				break;
     			}
 			}
 
     		usage = parseInt(memory, 10);
-    		if(usage>300 && self.notified == false){
+    		if(usage>800 && self.notified == false){
     			alert("You have only "+(1000-usage)+"MB left. Use wisely!");
     			self.notified = true;
     		};
-  			chrome.browserAction.setBadgeText({text: usage.toString()+units});
+  			chrome.browserAction.setBadgeText({text: usage.toString()+units	});
     	}
     },
 
@@ -162,7 +166,8 @@ chrome.browserAction.onClicked.addListener(function(tab){
 	netAccess.start();  	
 });
 
+//start once when loaded
+netAccess.start();
+
 // fire an update every 15min
-setTimeout(function(){
-	netAccess.start();
-},900000);
+var netaccessInterval = setInterval(netAccess.start, 900000);
