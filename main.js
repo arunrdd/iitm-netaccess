@@ -23,6 +23,7 @@
       this.usageHtml = '';
       this.duration = 1;
       this.notified = false;
+      this.details_notified = false;
         
       return this;
     },
@@ -52,8 +53,9 @@
 			  success: self.successLogin
 			});
     	}
-    	else{
+    	else if(self.details_notified==false){
     		chrome.tabs.create({url: "options.html"});
+            self.details_notified=true;
     	}
     },
 
