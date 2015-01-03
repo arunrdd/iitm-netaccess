@@ -62,7 +62,7 @@
     successLogin: function(html){
     	var self = netAccess;
     	$.parseHTML(html);
-    	if($( ".alert",html ).hasClass( "alert-warning" )){
+    	if($( ".alert",html ).hasClass( "alert-warning" ) && self.details_notified==false){
     		chrome.tabs.create({url: "options.html"},function(){
     			alert('Invalid login details!');
     		});
