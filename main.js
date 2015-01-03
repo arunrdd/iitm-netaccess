@@ -132,7 +132,7 @@
 			}
 
     		usage = parseInt(memory, 10);
-    		if(usage>800 && self.notified == false){
+    		if(usage>800 && self.notified == false && units == "MB"){
     			alert("You have only "+(1000-usage)+"MB left. Use wisely!");
     			self.notified = true;
     		};
